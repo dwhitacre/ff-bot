@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fantasy Football Bot</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.css" />
+    <link rel="stylesheet" href="./styles/milligram.min.css" />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <main class="wrapper">
+      <nav class="navigation">
+        <section class="container" id="navigation">
+          <h1 class="title">Fantasy Football Bot</h1>
+      </nav>
+
+      <section class="container" id="commands">
+        <h3>Commands</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Image</th>
+              <th>Enabled</th>
+            </tr>
+          </thead>
+          <tbody id="commands-table-body"></tbody>
+        </table>
+      </section>
+
+      <section class="container" id="failed" style="display:none">
+        <p>
+          Sorry, the commands failed to load. Maybe refresh? ¯\_(ツ)_/¯
+        </p>
+      </section>
+
+      <footer class="footer">
+        <section class="container ">
+          <p>
+            Made with ♥ by Dan.
+          </p>
+        </section>
+      </footer>
+    </main>
+  </body>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+  <script>
+    ;(function() {
+      function failed() {
+        $('#commands').hide()
+        $('#failed').show()
+      }
+
+      function td(text) {
+        return $('<td>').text(text)
+      }
+
+      function addType(array, type) {
+        return array
+          .map((item) => ({ ...item, type })) 
+      }
+
+      function sortSize(array) {
+        return array
+          .sort((a, b) => b.size - a.size)
+      }
+
+      function append(tbody, array) {
+        var tbody = $(tbody)
+
+        array.forEach(function(item) {
+          var tr = $('<tr>')
+            .append(td(item.type))
+            .append(td(item.name))
+            .append(td(item.size))
+
+          tbody.append(tr)
+        })
+      }
+
+      $.get('../commands', function(data, status) {
+        if (status !== 'success') return failed()
+
+        var backendList = sortSize(
+          addType(data.backend.queues, 'Queue').concat(
+            addType(data.backend.containers, 'Container')
+          ))
+        append('#backend-table-body', backendList)
+
+        var cacheBody = $('#commands-table-body')
+        var tr = $('<tr>')
+          .append(td('rmc'))
+          .append(td(JSON.stringify(data.rmc, null, 2)))
+        cacheBody.append(tr)
+      })
+    })()
+  </script>
+</html>

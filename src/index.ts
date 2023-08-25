@@ -1,0 +1,66 @@
+import 'dotenv/config'
+import Hapi, { ServerRegisterPluginObject } from '@hapi/hapi'
+import { resolve } from 'path'
+
+import routes from './routes'
+import GroupMe from './clients/groupme'
+
+async function start(): Promise<void> {
+  const server = new Hapi.Server({
+    host: process.env.HOST || 'localhost',
+    port: process.env.PORT || 3001,
+    routes: {
+      files: {
+        relativeTo: resolve(__dirname, '../public'),
+      },
+    },
+  })
+
+  await server.register({
+    plugin: await import('hapi-pino'),
+    options: {
+      redact: ['*.headers', '*.request', '*.response'],
+      level: process.env.LOG_LEVEL || 'info',
+      logPayload: !!process.env.LOG_PAYLOAD,
+      logRouteTags: true,
+      mergeHapiLogData: true,
+      ignorePaths: ['/health'],
+    },
+  } as ServerRegisterPluginObject<unknown>)
+
+  await server.register(await import('@hapi/inert'))
+  await server.register(await import('@hapi/vision'))
+
+  await server.register({
+    plugin: await import('hapi-swagger'),
+    options: {
+      info: {
+        title: 'Fantasy Football Bot',
+      },
+      documentationPage: false,
+    },
+  })
+
+  const groupme = new GroupMe(server, {
+    baseUrl: process.env.GROUPME_BASEURL || 'https://api.groupme.com/v3/',
+  })
+  server.decorate('server', 'groupme', function (): GroupMe {
+    return groupme
+  })
+
+  routes(server)
+
+  process.on('SIGTERM', async function () {
+    server.logger.warn('SIGTERM received, shutting down.')
+    await server.stop()
+    server.logger.warn('Server shutdown. Exiting..')
+    process.exit(0)
+  })
+
+  await server.start()
+}
+
+start().catch((err) => {
+  console.error(err)
+  process.exit(1)
+})

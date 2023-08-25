@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  ff-bot:
+    build: .
+    networks:
+      - localnet
+    ports:
+      - 3001:3001
+    env_file:
+      - .env.docker
+  groupmesim:
+    image: mockoon/cli:latest
+    command: --data data/groupmesim.mockoon.json --port 3002
+    networks:
+      - localnet
+    ports:
+      - 3002:3002
+    volumes:
+      - ./test/groupmesim:/data:ro
+
+networks:
+  localnet:
+    name: localnet

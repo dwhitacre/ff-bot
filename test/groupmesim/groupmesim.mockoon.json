@@ -1,0 +1,39 @@
+{
+  "uuid": "51ae7dbd-b5a7-44d7-a3b5-c6acddb50d3a",
+  "lastMigration": 28,
+  "name": "GroupMe Sim",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3002,
+  "hostname": "",
+  "folders": [],
+  "routes": [],
+  "rootChildren": [],
+  "proxyMode": false,
+  "proxyHost": "https://api.groupme.com/v3/",
+  "proxyRemovePrefix": true,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "cors": true,
+  "headers": [],
+  "proxyReqHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "proxyResHeaders": [
+    {
+      "key": "",
+      "value": ""
+    }
+  ],
+  "data": []
+}
