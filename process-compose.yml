@@ -1,0 +1,27 @@
+version: "0.5"
+
+log_location: ./dist/process-compose.log
+
+processes:
+  build:
+    command: "yarn build:watch --watch=forever"
+  ff-bot:
+    command: "yarn start:watch"
+    availability:
+      restart: "always"
+    depends_on:
+      build:
+      mssql:
+      groupmesim:
+  mssql:
+    command: "yarn start:mssql"
+    availability:
+      restart: "always"
+    shutdown:
+      command: "docker-compose stop mssql"
+  groupmesim:
+    command: "yarn start:groupmesim"
+    availability:
+      restart: "always"
+    shutdown:
+      command: "docker-compose stop groupmesim"
