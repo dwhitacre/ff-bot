@@ -1,5 +1,16 @@
 import { Server } from '@hapi/hapi'
-import sql, { ConnectionPool, config } from 'mssql'
+import sql, { ConnectionPool, IResult, ISqlType, config } from 'mssql'
+
+export interface Version {
+  name: string
+  dateApplied: Date
+}
+
+export interface Parameter {
+  name: string
+  type: ISqlType
+  value: unknown
+}
 
 export default class Db {
   readonly server: Server
@@ -34,5 +45,31 @@ export default class Db {
 
   ping() {
     return this.pool?.request().query('SELECT 1')
+  }
+
+  query<T>(query: string, parameters: Array<Parameter> = []): Promise<IResult<T>> {
+    const request = this.pool?.request()
+    if (!request) throw new Error('failed to query')
+
+    parameters.forEach((parameter) => request.input(parameter.name, parameter.type, parameter.value))
+    return request.query(query)
+  }
+
+  async getOne<T>(query: string): Promise<T> {
+    const result = await this.query<T>(query)
+    if (!result.recordset[0]) throw new Error('failed to getOne')
+    return result.recordset[0]
+  }
+
+  async version(): Promise<Version> {
+    try {
+      const version = await this.getOne<Version>('SELECT * FROM Versions WHERE dateApplied=(SELECT MAX(dateApplied) FROM Versions)')
+      return version
+    } catch (err) {
+      return {
+        name: '0.0.0',
+        dateApplied: new Date(),
+      }
+    }
   }
 }
