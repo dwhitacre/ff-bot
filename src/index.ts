@@ -4,6 +4,7 @@ import { resolve } from 'path'
 
 import routes from './routes'
 import GroupMe from './clients/groupme'
+import Db from './clients/db'
 
 async function start(): Promise<void> {
   const server = new Hapi.Server({
@@ -20,7 +21,7 @@ async function start(): Promise<void> {
     plugin: await import('hapi-pino'),
     options: {
       redact: ['*.headers', '*.request', '*.response'],
-      level: process.env.LOG_LEVEL || 'info',
+      level: process.env.LOG_LEVEL ?? 'info',
       logPayload: !!process.env.LOG_PAYLOAD,
       logRouteTags: true,
       mergeHapiLogData: true,
@@ -42,10 +43,33 @@ async function start(): Promise<void> {
   })
 
   const groupme = new GroupMe(server, {
-    baseUrl: process.env.GROUPME_BASEURL || 'https://api.groupme.com/v3/',
+    baseUrl: process.env.GROUPME_BASEURL ?? 'https://api.groupme.com/v3/',
   })
   server.decorate('server', 'groupme', function (): GroupMe {
     return groupme
+  })
+
+  if (!process.env.MSSQL_SA_PASSWORD) {
+    throw new Error('Missing MSSQL_SA_PASSWORD env var')
+  }
+
+  const db = new Db(server, {
+    user: 'sa',
+    password: process.env.MSSQL_SA_PASSWORD,
+    server: process.env.MSSQL_SERVER ?? 'localhost',
+    database: process.env.MSSQL_DATABASE ?? 'ffbot',
+    pool: {
+      max: parseInt(process.env.MSSQL_POOL_MAX ?? '10'),
+      min: parseInt(process.env.MSSQL_POOL_MIN ?? '0'),
+      idleTimeoutMillis: parseInt(process.env.MSSQL_POOL_TIMEOUT ?? '30000'),
+    },
+    options: {
+      encrypt: !!process.env.MSSQL_ENCRYPT,
+      trustServerCertificate: !!process.env.MSSQL_TRUST_SERVER_CERTIFICATE,
+    },
+  })
+  server.decorate('server', 'db', function (): Db {
+    return db
   })
 
   routes(server)
@@ -57,7 +81,13 @@ async function start(): Promise<void> {
     process.exit(0)
   })
 
-  await server.start()
+  await db.connect()
+  try {
+    await server.start()
+  } catch (err) {
+    await db.pool?.close()
+    throw err
+  }
 }
 
 start().catch((err) => {

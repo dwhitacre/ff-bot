@@ -5,9 +5,10 @@ export default function register(server: Server): void {
     method: 'GET',
     path: '/health',
     options: {
-      handler: (): {
+      handler: async (): Promise<{
         status: string
-      } => {
+      }> => {
+        await server.db().ping()
         return { status: 'ok' }
       },
       description: 'The health of the server.',
