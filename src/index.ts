@@ -42,35 +42,12 @@ async function start(): Promise<void> {
     },
   })
 
-  const groupme = new GroupMe(server, {
-    baseUrl: process.env.GROUPME_BASEURL ?? 'https://api.groupme.com/v3/',
-  })
-  server.decorate('server', 'groupme', function (): GroupMe {
-    return groupme
-  })
+  new GroupMe(server)
 
   if (!process.env.MSSQL_SA_PASSWORD) {
     throw new Error('Missing MSSQL_SA_PASSWORD env var')
   }
-
-  const db = new Db(server, {
-    user: 'sa',
-    password: process.env.MSSQL_SA_PASSWORD,
-    server: process.env.MSSQL_SERVER ?? 'localhost',
-    database: process.env.MSSQL_DATABASE ?? 'ffbot',
-    pool: {
-      max: parseInt(process.env.MSSQL_POOL_MAX ?? '10'),
-      min: parseInt(process.env.MSSQL_POOL_MIN ?? '0'),
-      idleTimeoutMillis: parseInt(process.env.MSSQL_POOL_TIMEOUT ?? '30000'),
-    },
-    options: {
-      encrypt: !!process.env.MSSQL_ENCRYPT,
-      trustServerCertificate: !!process.env.MSSQL_TRUST_SERVER_CERTIFICATE,
-    },
-  })
-  server.decorate('server', 'db', function (): Db {
-    return db
-  })
+  const db = new Db(server)
 
   routes(server)
 

@@ -4,18 +4,21 @@ import pack from '../../package.json'
 
 export default class GroupMe {
   readonly server: Server
-  readonly baseUrl: string
+  readonly baseUrl: string = process.env.GROUPME_BASEURL ?? 'https://api.groupme.com/v3/'
   readonly client: typeof Wreck
 
-  constructor(server: Server, { baseUrl }: { baseUrl: string }) {
+  constructor(server: Server) {
     this.server = server
-    this.baseUrl = baseUrl
 
     this.client = Wreck.defaults({
       baseUrl: this.baseUrl,
       headers: {
         'User-Agent': `${pack.name}:${pack.version}`,
       },
+    })
+
+    server.decorate('server', 'groupme', (): GroupMe => {
+      return this
     })
   }
 

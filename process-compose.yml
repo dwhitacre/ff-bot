@@ -9,6 +9,12 @@ processes:
     command: "yarn start:watch"
     availability:
       restart: "always"
+    readiness_probe:
+      http_get:
+        host: localhost
+        scheme: http
+        path: "/health"
+        port: 3001
     depends_on:
       build:
       mssql:

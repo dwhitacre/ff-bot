@@ -56,6 +56,8 @@
     "start:ngrok": "ts-node .bin/ngrok.ts",
     "start:docker": "docker-compose up --build -- ff-bot",
     "start:mssql": "docker-compose up -- mssql",
-    "start:groupmesim": "docker-compose up -- groupmesim"
+    "start:groupmesim": "docker-compose up -- groupmesim",
+    "db:up": "ts-node .bin/db.ts up",
+    "db:down": "ts-node .bin/db.ts down"
   }
 }
