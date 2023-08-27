@@ -4,12 +4,12 @@ export async function handler(request: Request, h: ResponseToolkit) {
   const { botId, apikey, sheetId } = request.query
   const hasApikey = apikey === process.env.APIKEY
 
-  if (!hasApikey) return h.response().code(403)
+  if (!hasApikey) return h.response({ hasApikey }).code(403)
 
   const command = await request.server.commands().get(`!${request.params.commandId}`, sheetId)
   request.server.logger.debug({ botId, hasApikey, sheetId, command }, 'command request info')
 
-  if (!command) return h.response({ message: 'no matching command', commandId: request.params.commandId })
+  if (!command?.id) return h.response({ message: 'no matching command', commandId: request.params.commandId })
   request.server.logger.debug({ command }, 'command found')
 
   if (!command.enabled) return h.response({ message: 'command not enabled', commandId: request.params.commandId })

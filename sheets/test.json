@@ -1,0 +1,9 @@
+{
+  "rows": [{
+    "command": "disabled",
+    "message": "I am disabled",
+    "desc": "",
+    "disabled": "x",
+    "hidden": ""
+  }]
+}

@@ -29,8 +29,8 @@ SheetId: defaults
 }) as Array<SheetsRow & { result: string }>
 
 describe('api', function () {
-  describe('/command defaults', () => {
-    it.each(defaults)('/command/$id: should respond with command', async function (command) {
+  describe('/command', () => {
+    it.each(defaults)('/command/$command: should respond with command', async function (command) {
       const response = await fetch(`${url}/command/${command.command}?apikey=${process.env.APIKEY}`)
       const data = await response.json()
 
@@ -48,6 +48,40 @@ describe('api', function () {
       expect(data.commandId).toBe(command.command)
       expect(data.botId).toBeUndefined()
       expect(data.hasApikey).toBe(true)
+    })
+
+    it('should reject if no apikey', async function () {
+      const response = await fetch(`${url}/command/health`)
+      const data = await response.json()
+
+      expect(response.status).toBe(403)
+      expect(data.hasApikey).toBe(false)
+    })
+
+    it('should reject if bad apikey', async function () {
+      const response = await fetch(`${url}/command/health?apikey=bad`)
+      const data = await response.json()
+
+      expect(response.status).toBe(403)
+      expect(data.hasApikey).toBe(false)
+    })
+
+    it('should do nothing on no matching command', async function () {
+      const response = await fetch(`${url}/command/nomatchingcommand?apikey=${process.env.APIKEY}`)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.commandId).toBe('nomatchingcommand')
+      expect(data.message).toBe('no matching command')
+    })
+
+    it('should do nothing on disabled command', async function () {
+      const response = await fetch(`${url}/command/disabled?apikey=${process.env.APIKEY}&sheetId=test`)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.commandId).toBe('disabled')
+      expect(data.message).toBe('command not enabled')
     })
   })
 
