@@ -14,6 +14,16 @@ export default function register(server: Server): void {
         if (!command.enabled) return h.response({ message: 'command not enabled', commandId: request.params.commandId })
         request.server.logger.debug({ command }, 'command enabled, running..')
 
+        if (command.message?.includes('!fn:')) {
+          request.server.logger.debug({ command }, 'command includes !fn:')
+
+          const match = command.message?.match(/.*(\w|^)!fn:(?<fnName>.*)(\w|$)?/)
+          const { fnName } = match?.groups || {}
+          request.server.logger.debug({ command, match, fnName }, '!fn: match')
+
+          if (fnName) command.message = await request.server.commands().call(fnName)
+        }
+
         const botId = request.query.botId
         const hasToken = request.query.token === process.env.APIKEY
 

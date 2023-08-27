@@ -40,11 +40,19 @@ export const defaults = [
     enabled: true,
     hidden: false,
   },
+  {
+    id: 'list',
+    message: '!fn:list',
+    desc: 'Returns the list of commands.',
+    enabled: true,
+    hidden: false,
+  },
 ]
 
 export default class Commands {
   readonly server: Server
   readonly defaults: Array<Command> = defaults
+  readonly callable = [{ name: 'list', fn: this.list }]
 
   constructor(server: Server) {
     this.server = server
@@ -56,10 +64,29 @@ export default class Commands {
 
   async get(commandId: string) {
     const commands = await this.getAll()
-    return commands.find((command) => command.id === commandId)
+    return Object.assign(
+      {},
+      commands.find((command) => command.id === commandId),
+    )
   }
 
   async getAll() {
     return this.defaults.concat(await this.server.sheets().commands())
+  }
+
+  async call(fnName: string) {
+    const fn = this.callable.find((c) => c.name === fnName)
+    if (!fn) return ''
+
+    return fn.fn.call(this)
+  }
+
+  async list() {
+    const commands = await this.getAll()
+    commands.sort((a, b) => a.id.localeCompare(b.id))
+    return commands
+      .filter((command) => !command.hidden && command.enabled)
+      .reduce((message, command) => (message += `,!${command.id}`), '')
+      .slice(1)
   }
 }
