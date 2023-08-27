@@ -53,6 +53,7 @@ export default class Commands {
   readonly server: Server
   readonly defaults: Array<Command> = defaults
   readonly callable = [{ name: 'list', fn: this.list }]
+  readonly fnNameRegex = /.*(\w|^)!fn:(?<fnName>.*)(\w|$)?/
 
   constructor(server: Server) {
     this.server = server
@@ -74,11 +75,21 @@ export default class Commands {
     return this.defaults.concat(await this.server.sheets().commands())
   }
 
-  async call(fnName: string) {
+  getFnName(message: string) {
+    const match = message.match(this.fnNameRegex)
+    const { fnName } = match?.groups || { fnName: '' }
+    return fnName
+  }
+
+  async call(command: Command) {
+    if (!command.message) return ''
+
+    const fnName = this.getFnName(command.message)
     const fn = this.callable.find((c) => c.name === fnName)
     if (!fn) return ''
 
-    return fn.fn.call(this)
+    const fnValue = await fn.fn.call(this)
+    return command.message.replace(`!fn:${fnName}`, fnValue)
   }
 
   async list() {

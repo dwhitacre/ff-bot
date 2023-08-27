@@ -15,13 +15,8 @@ export default function register(server: Server): void {
         request.server.logger.debug({ command }, 'command enabled, running..')
 
         if (command.message?.includes('!fn:')) {
-          request.server.logger.debug({ command }, 'command includes !fn:')
-
-          const match = command.message?.match(/.*(\w|^)!fn:(?<fnName>.*)(\w|$)?/)
-          const { fnName } = match?.groups || {}
-          request.server.logger.debug({ command, match, fnName }, '!fn: match')
-
-          if (fnName) command.message = await request.server.commands().call(fnName)
+          request.server.logger.debug({ command }, '!fn: match')
+          command.message = await request.server.commands().call(command)
         }
 
         const botId = request.query.botId
