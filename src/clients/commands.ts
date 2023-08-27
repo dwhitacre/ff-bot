@@ -70,8 +70,7 @@ export class Fns {
   }
 
   async info(sheetId?: string) {
-    return `
-Version: ${packageJson.version}
+    return `Version: ${packageJson.version}
 SheetId: ${sheetId ?? 'defaults'}
     `
   }

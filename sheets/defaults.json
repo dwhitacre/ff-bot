@@ -15,7 +15,7 @@
   },
   {
     "command": "whatsnew",
-    "message": "The bot is back! Again!",
+    "message": "The bot is back! Again! Try !list to see the available commands.",
     "desc": "What is new in the latest update.",
     "disabled": "",
     "hidden": ""

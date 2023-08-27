@@ -4,7 +4,16 @@ import { handler } from './command'
 export interface GroupMeWebhook {
   text?: string
   system?: boolean
-  sender_type?: 'bot' | string
+  sender_type?: 'bot' | 'user' | string
+  attachments?: Array<unknown>
+  avatar_url?: string
+  created_at?: number
+  group_id?: string
+  id?: string
+  name?: string
+  sender_id?: string
+  source_guid?: string
+  user_id?: string
   [_: string]: unknown
 }
 

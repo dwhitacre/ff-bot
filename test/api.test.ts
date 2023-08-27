@@ -18,8 +18,7 @@ const defaults = loadJson('defaults').rows.map((r) => {
     case 'info':
       return {
         ...row,
-        result: `
-Version: 3.0.0
+        result: `Version: 3.0.0
 SheetId: defaults
     `,
       }
