@@ -1,0 +1,37 @@
+{
+  "rows": [{
+    "command": "health",
+    "message": "I am running!",
+    "desc": "Just a health check for the bot.",
+    "disabled": "",
+    "hidden": "x"
+  },
+  {
+    "command": "info",
+    "message": "!fn:info",
+    "desc": "Information about the bot.",
+    "disabled": "",
+    "hidden": "x"
+  },
+  {
+    "command": "whatsnew",
+    "message": "The bot is back! Again! This time sponsored by the Cleveland Browns.",
+    "desc": "What is new in the latest update.",
+    "disabled": "",
+    "hidden": ""
+  },
+  {
+    "command": "help",
+    "message": "Type !list to see the available commands. Use the commands anywhere in your message, and I will respond!",
+    "desc": "Helpful information on using commands.",
+    "disabled": "",
+    "hidden": ""
+  },
+  {
+    "command": "list",
+    "message": "!fn:list",
+    "desc": "Returns the list of commands.",
+    "disabled": "",
+    "hidden": ""
+  }]
+}

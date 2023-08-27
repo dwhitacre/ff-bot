@@ -13,7 +13,7 @@ processes:
       http_get:
         host: localhost
         scheme: http
-        path: "/command/health"
+        path: "/health"
         port: 3001
     depends_on:
       build:

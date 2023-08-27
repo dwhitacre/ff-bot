@@ -1,6 +1,5 @@
 import { Server } from '@hapi/hapi'
 import Wreck from '@hapi/wreck'
-import pack from '../../package.json'
 
 export default class GroupMe {
   readonly server: Server
@@ -15,7 +14,6 @@ export default class GroupMe {
     this.client = Wreck.defaults({
       baseUrl: this.baseUrl,
       headers: {
-        'User-Agent': `${pack.name}:${pack.version}`,
         'X-Access-Token': process.env.GROUPME_TOKEN,
       },
     })

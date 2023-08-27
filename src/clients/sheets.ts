@@ -1,18 +1,28 @@
 import { Server } from '@hapi/hapi'
 import { JWT } from 'google-auth-library'
-import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
+import { GoogleSpreadsheet } from 'google-spreadsheet'
 
-import { Command } from './commands'
+import { readFile } from 'fs/promises'
+import { resolve } from 'path'
+import { existsSync } from 'fs'
 
-const scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file']
+export interface SheetsRow {
+  command?: string
+  message?: string
+  pictureurl?: string
+  desc?: string
+  disabled?: string
+  hidden?: string
+}
 
 export default class Sheets {
   readonly server: Server
-  readonly enabled: boolean = process.env.GOOGLE_SHEET_ENABLED === 'true'
-  readonly doc: GoogleSpreadsheet
+  readonly jwt: JWT
+  readonly dir = resolve(__dirname, '../sheets')
   readonly expiry: number = parseInt(process.env.GOOGLE_SHEETS_CACHE_EXPIRY ?? '60000')
-  cache: Array<GoogleSpreadsheetRow> = []
-  time?: number = undefined
+  readonly scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file']
+
+  commandsCache: { [_: string]: { cache: Array<SheetsRow>; time: number } } = {}
 
   constructor(server: Server) {
     this.server = server
@@ -21,57 +31,56 @@ export default class Sheets {
     if (!process.env.GOOGLE_SHEETS_EMAIL) throw new Error('missing GOOGLE_SHEETS_EMAIL')
     if (!process.env.GOOGLE_SHEETS_KEY) throw new Error('missing GOOGLE_SHEETS_KEY')
 
-    this.doc = new GoogleSpreadsheet(
-      process.env.GOOGLE_SHEETS_ID,
-      new JWT({
-        email: process.env.GOOGLE_SHEETS_EMAIL,
-        key: process.env.GOOGLE_SHEETS_KEY,
-        scopes,
-      }),
-    )
+    this.jwt = new JWT({
+      email: process.env.GOOGLE_SHEETS_EMAIL,
+      key: process.env.GOOGLE_SHEETS_KEY,
+      scopes: this.scopes,
+    })
 
     server.decorate('server', 'sheets', (): Sheets => {
       return this
     })
   }
 
-  private async getRows() {
-    await this.doc.loadInfo()
-    return this.doc.sheetsByTitle['Commands']?.getRows() ?? []
+  async loadFromFile(sheetId: string) {
+    const filePath = resolve(this.dir, `${sheetId}.json`)
+    this.server.logger.debug({ sheetId, filePath }, 'Sheets loading commands from file')
+
+    if (!existsSync(filePath)) return (this.commandsCache[sheetId] = { cache: [], time: Date.now() })
+
+    const fileContent = await readFile(filePath, { encoding: 'utf-8' })
+    this.commandsCache[sheetId] = { cache: JSON.parse(fileContent).rows, time: Date.now() }
   }
 
-  private async getRowsWithCache() {
-    if (!this.time || (this.time && this.expiry < Date.now() - this.time)) {
-      this.time = Date.now()
-      try {
-        await this.doc.loadInfo()
-        return (this.cache = await this.getRows())
-      } catch (err) {
-        this.server.logger.error(err, 'error: sheets rows')
-      }
-    }
+  async loadFromSheets(sheetId: string) {
+    this.server.logger.debug({ sheetId }, 'Sheets loading commands from sheets')
 
-    this.server.logger.debug({ cache: this.cache }, 'using sheets cache')
-    return this.cache
+    const doc = new GoogleSpreadsheet(sheetId, this.jwt)
+    await doc.loadInfo()
+    const rows = (await doc.sheetsByTitle['Commands']?.getRows()) ?? []
+    this.commandsCache[sheetId] = { cache: rows.map((row) => row.toObject()), time: Date.now() }
   }
 
-  async commands() {
-    if (!this.enabled) return []
-    const rows = await this.getRowsWithCache()
-    return rows.map((row) => this.parseCommand(row.toObject())).filter((row) => row == null) as Array<Command>
+  async load(sheetId: string) {
+    const filePath = resolve(this.dir, `${sheetId}.json`)
+    existsSync(filePath) ? await this.loadFromFile(sheetId) : await this.loadFromSheets(sheetId)
+    this.server.logger.debug({ commandsCache: this.commandsCache }, 'Sheets loaded')
   }
 
-  parseCommand(row: { [_: string]: string }): Command | null {
-    if (!row?.command) return null
-    if (!row?.message && !row?.pictureurl) return null
+  hasExpired(sheetId: string) {
+    const time = this.commandsCache[sheetId]?.time ?? 0
+    const now = Date.now()
+    const expired = this.expiry < now - time
+    this.server.logger.debug({ expiry: this.expiry, now, time })
+    return expired
+  }
 
-    return {
-      id: row.command,
-      message: row.message ?? '',
-      pictureurl: row.pictureurl ?? '',
-      desc: row.desc ?? '',
-      enabled: row.disabled !== 'x',
-      hidden: row.hidden === 'x',
-    }
+  has(sheetId: string) {
+    return !!this.commandsCache[sheetId] && !this.hasExpired(sheetId)
+  }
+
+  async get(sheetId = 'defaults'): Promise<Array<SheetsRow>> {
+    if (!this.has(sheetId)) await this.load(sheetId)
+    return this.commandsCache[sheetId].cache
   }
 }

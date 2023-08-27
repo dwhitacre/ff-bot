@@ -1,6 +1,12 @@
 import { Server } from '@hapi/hapi'
 
 import packageJson from '../../package.json'
+import { SheetsRow } from './sheets'
+
+export interface Fn {
+  name: string
+  fn: (sheetId: string) => string
+}
 
 export interface Command {
   id: string
@@ -11,100 +17,125 @@ export interface Command {
   hidden: boolean
 }
 
-export const defaults = [
-  {
-    id: 'health',
-    message: 'I am running!',
-    desc: 'Just a health check for the bot.',
-    enabled: true,
-    hidden: true,
-  },
-  {
-    id: 'version',
-    message: `Current Version: ${packageJson.version}`,
-    desc: "The bot's version.",
-    enabled: true,
-    hidden: true,
-  },
-  {
-    id: 'whatsnew',
-    message: 'The bot is back! Again! This time sponsored by the Cleveland Browns.',
-    desc: 'What is new in the latest update.',
-    enabled: true,
-    hidden: false,
-  },
-  {
-    id: 'help',
-    message: 'Type !list to see the available commands. Use the commands anywhere in your message, and I will respond!',
-    desc: 'Helpful information on using commands.',
-    enabled: true,
-    hidden: false,
-  },
-  {
-    id: 'list',
-    message: '!fn:list',
-    desc: 'Returns the list of commands.',
-    enabled: true,
-    hidden: false,
-  },
-]
-
-export default class Commands {
+export class Fns {
   readonly server: Server
-  readonly defaults: Array<Command> = defaults
-  readonly callable = [{ name: 'list', fn: this.list }]
-  readonly commandIdRegex = /(\s|^)!(?<commandId>\w+)(\s|$)/
-  readonly fnNameRegex = /(\s|^)!fn:(?<fnName>\w+)(\s|$)/
+  readonly prefix = '!fn:'
+  readonly regex = /(\s|^)!fn:(?<fnName>\w+)(\s|$)/
+
+  readonly unknownFn = {
+    name: 'unknown',
+    fn: this.unknown,
+  }
+  readonly fns = [
+    {
+      name: 'list',
+      fn: this.list,
+    },
+    {
+      name: 'info',
+      fn: this.info,
+    },
+    this.unknownFn,
+  ]
 
   constructor(server: Server) {
     this.server = server
+  }
+
+  findName(message = '') {
+    const match = message.match(this.regex)
+    const { fnName } = match?.groups || { fnName: '' }
+    return fnName
+  }
+
+  fromCommand(command: Command) {
+    const name = this.findName(command.message)
+    return this.fns.find((fn) => name == fn.name) ?? this.unknownFn
+  }
+
+  async getMessage(command: Command, sheetId?: string) {
+    if (!command.message) return ''
+
+    const fn = this.fromCommand(command)
+    return command.message.replace(`!fn:${fn.name}`, await fn.fn.call(this, sheetId))
+  }
+
+  async list(sheetId?: string) {
+    const commands = Array.from(await this.server.commands().getAll(sheetId))
+    commands.sort((a, b) => a.id.localeCompare(b.id))
+    return commands
+      .filter((command) => !command.hidden && command.enabled)
+      .reduce((message, command) => (message += `,!${command.id}`), '')
+      .slice(1)
+  }
+
+  async info(sheetId?: string) {
+    return `
+Version: ${packageJson.version}
+SheetId: ${sheetId ?? 'defaults'}
+    `
+  }
+
+  async unknown(_?: string) {
+    return '__unknown_fn__'
+  }
+}
+
+export default class Commands {
+  readonly server: Server
+  readonly prefix = '!'
+  readonly regex = /(\s|^)!(?<commandId>\w+)(\s|$)/
+  readonly fns: Fns
+
+  constructor(server: Server) {
+    this.server = server
+    this.fns = new Fns(this.server)
 
     server.decorate('server', 'commands', (): Commands => {
       return this
     })
   }
 
-  async get(commandId: string) {
-    const commands = await this.getAll()
+  fromSheetsRow(row: SheetsRow): Command | null {
+    if (!row?.command) return null
+    if (!row?.message && !row?.pictureurl) return null
+
+    return {
+      id: row.command,
+      message: row.message ?? '',
+      pictureurl: row.pictureurl ?? '',
+      desc: row.desc ?? '',
+      enabled: row.disabled !== 'x',
+      hidden: row.hidden === 'x',
+    }
+  }
+
+  getCommandId(text = '') {
+    const match = text.match(this.regex)
+    const { commandId } = match?.groups || { commandId: '' }
+    return commandId
+  }
+
+  async getAll(sheetId?: string) {
+    const rows = await this.server.sheets().get(sheetId)
+    return rows.map((row) => this.fromSheetsRow(row)).filter((row) => row != null) as Array<Command>
+  }
+
+  async getRaw(commandId: string, sheetId?: string) {
+    const commands = await this.getAll(sheetId)
     return Object.assign(
       {},
       commands.find((command) => command.id === commandId),
     )
   }
 
-  getCommandId(message: string) {
-    const match = message.match(this.commandIdRegex)
-    const { commandId } = match?.groups || { commandId: '' }
-    return commandId
-  }
+  async get(text?: string, sheetId?: string) {
+    const command = await this.getRaw(this.getCommandId(text), sheetId)
+    if (!command) return null
+    if (!command.message) return command
+    if (!command.enabled) return command
 
-  async getAll() {
-    return this.defaults.concat(await this.server.sheets().commands())
-  }
-
-  getFnName(message: string) {
-    const match = message.match(this.fnNameRegex)
-    const { fnName } = match?.groups || { fnName: '' }
-    return fnName
-  }
-
-  async call(command: Command) {
-    if (!command.message) return ''
-
-    const fnName = this.getFnName(command.message)
-    const fn = this.callable.find((c) => c.name === fnName)
-    if (!fn) return ''
-
-    const fnValue = await fn.fn.call(this)
-    return command.message.replace(`!fn:${fnName}`, fnValue)
-  }
-
-  async list() {
-    const commands = await this.getAll()
-    commands.sort((a, b) => a.id.localeCompare(b.id))
-    return commands
-      .filter((command) => !command.hidden && command.enabled)
-      .reduce((message, command) => (message += `,!${command.id}`), '')
-      .slice(1)
+    command.message = await this.fns.getMessage(command, sheetId)
+    return command
   }
 }

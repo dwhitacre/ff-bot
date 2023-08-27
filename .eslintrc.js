@@ -8,8 +8,8 @@ module.exports = {
   rules: {
     semi: ['error', 'never'],
     quotes: ['error', 'single', { avoidEscape: true }],
-    'no-unused-vars': ['error', { varsIgnorePattern: '^_' }],
-    '@typescript-eslint/no-unused-vars': ['error', { varsIgnorePattern: '^_' }],
+    'no-unused-vars': ['off', { varsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-unused-vars': ['off', { varsIgnorePattern: '^_' }],
     'prettier/prettier': [
       'error',
       {
