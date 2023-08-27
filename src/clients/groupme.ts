@@ -10,10 +10,13 @@ export default class GroupMe {
   constructor(server: Server) {
     this.server = server
 
+    if (!process.env.GROUPME_TOKEN) throw new Error('missing GROUPME_TOKEN')
+
     this.client = Wreck.defaults({
       baseUrl: this.baseUrl,
       headers: {
         'User-Agent': `${pack.name}:${pack.version}`,
+        'X-Access-Token': process.env.GROUPME_TOKEN,
       },
     })
 
@@ -27,6 +30,26 @@ export default class GroupMe {
       return this.client.request(method.toUpperCase(), url, options)
     } catch (err) {
       this.server.logger.error(err)
+      return false
+    }
+  }
+
+  async botPost(botId: string, text: string, url: string, options = {}) {
+    try {
+      const response = await this.call('post', 'bots/post', {
+        payload: {
+          bot_id: botId,
+          text,
+          picture_url: url,
+        },
+        ...options,
+      })
+      if (!response) throw new Error('groupme no response')
+
+      this.server.logger.debug({ status: response.statusCode, statusText: response.statusMessage }, 'groupme bots/post')
+      return { response }
+    } catch (err) {
+      this.server.logger.error(err, 'groupme failed to botPost')
       return false
     }
   }
