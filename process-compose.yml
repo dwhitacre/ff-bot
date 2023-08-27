@@ -24,3 +24,10 @@ processes:
       restart: "always"
     shutdown:
       command: "docker-compose stop groupmesim"
+  ngrok:
+    command: "yarn start:ngrok"
+    availability:
+      restart: "always"
+    depends_on:
+      ff-bot:
+        condition: process_healthy

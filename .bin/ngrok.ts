@@ -6,6 +6,7 @@ async function run(): Promise<void> {
     proto: 'http',
     port: parseInt(process.env.PORT || '3001'),
     authtoken: process.env.NGROK_TOKEN,
+    subdomain: process.env.NGROK_SUBDOMAIN,
   })
   console.log(`ngrok running at ${url}`)
 }
