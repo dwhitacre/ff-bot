@@ -25,7 +25,6 @@ async function start(): Promise<void> {
       logPayload: !!process.env.LOG_PAYLOAD,
       logRouteTags: true,
       mergeHapiLogData: true,
-      ignorePaths: ['/health'],
     },
   } as ServerRegisterPluginObject<unknown>)
 

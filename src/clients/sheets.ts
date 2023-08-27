@@ -2,16 +2,9 @@ import { Server } from '@hapi/hapi'
 import { JWT } from 'google-auth-library'
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
 
-const scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file']
+import { Command } from '../routes/command'
 
-export interface Command {
-  id: string
-  text: string
-  url: string
-  desc: string
-  enabled: boolean
-  hidden: boolean
-}
+const scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file']
 
 export default class Sheets {
   readonly server: Server
@@ -63,16 +56,18 @@ export default class Sheets {
 
   async commands() {
     const rows = await this.getRowsWithCache()
-    return rows.map((row) => this.parseCommand(row.toObject())).filter((row) => row == null)
+    return rows.map((row) => this.parseCommand(row.toObject())).filter((row) => row == null) as Array<Command>
   }
 
   parseCommand(row: { [_: string]: string }): Command | null {
+    if (!row?.command) return null
     if (!row?.message && !row?.pictureurl) return null
+
     return {
       id: row.command,
-      text: row.message,
-      url: row.pictureurl,
-      desc: row.desc,
+      message: row.message ?? '',
+      pictureurl: row.pictureurl ?? '',
+      desc: row.desc ?? '',
       enabled: row.disabled !== 'x',
       hidden: row.hidden === 'x',
     }

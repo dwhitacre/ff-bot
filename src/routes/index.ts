@@ -1,9 +1,9 @@
 import { Server } from '@hapi/hapi'
 
-import health from './health'
+import command from './command'
 import home from './home'
 
 export default function register(server: Server): void {
-  health(server)
+  command(server)
   home(server)
 }

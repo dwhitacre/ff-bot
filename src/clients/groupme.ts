@@ -34,13 +34,13 @@ export default class GroupMe {
     }
   }
 
-  async botPost(botId: string, text: string, url: string, options = {}) {
+  async botPost(botId: string, message?: string, pictureurl?: string, options = {}) {
     try {
       const response = await this.call('post', 'bots/post', {
         payload: {
           bot_id: botId,
-          text,
-          picture_url: url,
+          text: message,
+          picture_url: pictureurl,
         },
         ...options,
       })
