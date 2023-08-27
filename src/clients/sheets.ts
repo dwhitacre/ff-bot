@@ -27,7 +27,6 @@ export default class Sheets {
   constructor(server: Server) {
     this.server = server
 
-    if (!process.env.GOOGLE_SHEETS_ID) throw new Error('missing GOOGLE_SHEETS_ID')
     if (!process.env.GOOGLE_SHEETS_EMAIL) throw new Error('missing GOOGLE_SHEETS_EMAIL')
     if (!process.env.GOOGLE_SHEETS_KEY) throw new Error('missing GOOGLE_SHEETS_KEY')
 
