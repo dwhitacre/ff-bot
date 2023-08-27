@@ -4,7 +4,6 @@ import { resolve } from 'path'
 
 import routes from './routes'
 import GroupMe from './clients/groupme'
-import Db from './clients/db'
 
 async function start(): Promise<void> {
   const server = new Hapi.Server({
@@ -43,12 +42,6 @@ async function start(): Promise<void> {
   })
 
   new GroupMe(server)
-
-  if (!process.env.MSSQL_SA_PASSWORD) {
-    throw new Error('Missing MSSQL_SA_PASSWORD env var')
-  }
-  const db = new Db(server)
-
   routes(server)
 
   process.on('SIGTERM', async function () {
@@ -58,13 +51,7 @@ async function start(): Promise<void> {
     process.exit(0)
   })
 
-  await db.connect()
-  try {
-    await server.start()
-  } catch (err) {
-    await db.pool?.close()
-    throw err
-  }
+  await server.start()
 }
 
 start().catch((err) => {

@@ -9,17 +9,6 @@ services:
       - 3001:3001
     env_file:
       - .env
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    networks:
-      - localnet
-    ports:
-      - 1433:1433
-    env_file:
-      - .env
-    volumes:
-      - ./db/docker:/usr/config:ro
-    entrypoint: ["bash", "/usr/config/entrypoint.sh"]
   groupmesim:
     image: mockoon/cli:latest
     command: --data data/groupmesim.mockoon.json --port 3002

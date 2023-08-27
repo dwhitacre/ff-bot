@@ -17,14 +17,7 @@ processes:
         port: 3001
     depends_on:
       build:
-      mssql:
       groupmesim:
-  mssql:
-    command: "yarn start:mssql"
-    availability:
-      restart: "always"
-    shutdown:
-      command: "docker-compose stop mssql"
   groupmesim:
     command: "yarn start:groupmesim"
     availability:
