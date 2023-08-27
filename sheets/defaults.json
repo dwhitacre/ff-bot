@@ -15,7 +15,7 @@
   },
   {
     "command": "whatsnew",
-    "message": "The bot is back! Again! This time sponsored by the Cleveland Browns.",
+    "message": "The bot is back! Again!",
     "desc": "What is new in the latest update.",
     "disabled": "",
     "hidden": ""

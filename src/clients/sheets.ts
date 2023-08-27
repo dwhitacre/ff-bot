@@ -49,7 +49,7 @@ export default class Sheets {
     try {
       if (!existsSync(filePath)) throw new Error('file does not exist')
       const fileContent = await readFile(filePath, { encoding: 'utf-8' })
-      this.commandsCache[sheetId] = { cache: JSON.parse(fileContent).rows, time: Date.now() }
+      this.commandsCache[sheetId] = { cache: JSON.parse(fileContent).rows ?? [], time: Date.now() }
     } catch (err) {
       this.server.logger.warn(err, 'Sheets failed to load commands from file')
       this.commandsCache[sheetId] = { cache: [], time: Date.now() }

@@ -85,7 +85,15 @@ describe('api', function () {
     })
 
     it.todo('should botPost if botId')
-    it.todo('should not find command if sheet id fails to load')
+
+    it('should not find command if sheet id fails to load', async function () {
+      const response = await fetch(`${url}/command/health?apikey=${process.env.APIKEY}&sheetId=bad`)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.commandId).toBe('health')
+      expect(data.message).toBe('no matching command')
+    })
   })
 
   describe('/webhook/groupme', () => {
