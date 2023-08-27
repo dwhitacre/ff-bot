@@ -1,5 +1,7 @@
 import { Server, Request, ResponseToolkit } from '@hapi/hapi'
 
+import packageJson from '../../package.json'
+
 export interface Command {
   id: string
   message?: string
@@ -14,6 +16,13 @@ export const defaultCommands: Array<Command> = [
     id: 'health',
     message: 'I am running!',
     desc: 'Just a health check for the bot.',
+    enabled: true,
+    hidden: true,
+  },
+  {
+    id: 'version',
+    message: packageJson.version,
+    desc: "The bot's version.",
     enabled: true,
     hidden: true,
   },

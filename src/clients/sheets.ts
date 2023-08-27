@@ -8,6 +8,7 @@ const scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.goo
 
 export default class Sheets {
   readonly server: Server
+  readonly enabled: boolean = process.env.GOOGLE_SHEET_ENABLED === 'true'
   readonly doc: GoogleSpreadsheet
   readonly expiry: number = parseInt(process.env.GOOGLE_SHEETS_CACHE_EXPIRY ?? '60000')
   cache: Array<GoogleSpreadsheetRow> = []
@@ -34,12 +35,12 @@ export default class Sheets {
     })
   }
 
-  async getRows() {
+  private async getRows() {
     await this.doc.loadInfo()
     return this.doc.sheetsByTitle['Commands']?.getRows() ?? []
   }
 
-  async getRowsWithCache() {
+  private async getRowsWithCache() {
     if (!this.time || (this.time && this.expiry < Date.now() - this.time)) {
       this.time = Date.now()
       try {
@@ -55,6 +56,7 @@ export default class Sheets {
   }
 
   async commands() {
+    if (!this.enabled) return []
     const rows = await this.getRowsWithCache()
     return rows.map((row) => this.parseCommand(row.toObject())).filter((row) => row == null) as Array<Command>
   }

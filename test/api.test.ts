@@ -4,16 +4,13 @@ import { defaultCommands } from '../src/routes/command'
 const url = `http://${process.env.HOST}:${process.env.PORT}`
 
 describe('api', function () {
-  it.each([{ commandId: 'health' }])('/command/$commandId: should respond with command', async function ({ commandId }) {
-    const expected = defaultCommands.find((command) => command.id === commandId)
-    if (!expected) throw new Error('should have expected command')
-
-    const response = await fetch(`${url}/command/${commandId}`)
+  it.each(defaultCommands)('/command/$id: should respond with command', async function (command) {
+    const response = await fetch(`${url}/command/${command.id}`)
     const data = await response.json()
 
     expect(response.status).toBe(200)
-    expect(data.command).toEqual(expected)
-    expect(data.commandId).toBe(expected.id)
+    expect(data.command).toEqual(command)
+    expect(data.commandId).toBe(command.id)
     expect(data.botId).toBeUndefined()
     expect(data.hasToken).toBe(false)
   })
