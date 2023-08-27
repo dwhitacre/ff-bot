@@ -46,19 +46,28 @@ export default class Sheets {
     const filePath = resolve(this.dir, `${sheetId}.json`)
     this.server.logger.debug({ sheetId, filePath }, 'Sheets loading commands from file')
 
-    if (!existsSync(filePath)) return (this.commandsCache[sheetId] = { cache: [], time: Date.now() })
-
-    const fileContent = await readFile(filePath, { encoding: 'utf-8' })
-    this.commandsCache[sheetId] = { cache: JSON.parse(fileContent).rows, time: Date.now() }
+    try {
+      if (!existsSync(filePath)) throw new Error('file does not exist')
+      const fileContent = await readFile(filePath, { encoding: 'utf-8' })
+      this.commandsCache[sheetId] = { cache: JSON.parse(fileContent).rows, time: Date.now() }
+    } catch (err) {
+      this.server.logger.warn(err, 'Sheets failed to load commands from file')
+      this.commandsCache[sheetId] = { cache: [], time: Date.now() }
+    }
   }
 
   async loadFromSheets(sheetId: string) {
     this.server.logger.debug({ sheetId }, 'Sheets loading commands from sheets')
 
-    const doc = new GoogleSpreadsheet(sheetId, this.jwt)
-    await doc.loadInfo()
-    const rows = (await doc.sheetsByTitle['Commands']?.getRows()) ?? []
-    this.commandsCache[sheetId] = { cache: rows.map((row) => row.toObject()), time: Date.now() }
+    try {
+      const doc = new GoogleSpreadsheet(sheetId, this.jwt)
+      await doc.loadInfo()
+      const rows = (await doc.sheetsByTitle['Commands']?.getRows()) ?? []
+      this.commandsCache[sheetId] = { cache: rows.map((row) => row.toObject()), time: Date.now() }
+    } catch (err) {
+      this.server.logger.warn(err, 'Sheets failed to load commands from sheets')
+      this.commandsCache[sheetId] = { cache: [], time: Date.now() }
+    }
   }
 
   async load(sheetId: string) {

@@ -83,62 +83,173 @@ describe('api', function () {
       expect(data.commandId).toBe('disabled')
       expect(data.message).toBe('command not enabled')
     })
+
+    it.todo('should botPost if botId')
+    it.todo('should not find command if sheet id fails to load')
   })
 
-  // describe.skip('/webhook/groupme', () => {
-  //   it('can find no command', async () => {
-  //     const response = await fetch(`${url}/webhook/groupme`, {
-  //       method: 'POST',
-  //       headers: {
-  //         Accept: 'application/json',
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({ text: 'nothing here folks' }),
-  //     })
-  //     const data = await response.json()
+  describe('/webhook/groupme', () => {
+    it('should reject if no apikey', async function () {
+      const response = await fetch(`${url}/webhook/groupme`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: 'nothing here folks' }),
+      })
+      const data = await response.json()
 
-  //     expect(response.status).toBe(200)
-  //     expect(data.message).toEqual('no commands')
-  //   })
+      expect(response.status).toBe(403)
+      expect(data.hasApikey).toBe(false)
+    })
 
-  //   it('can find a command', async () => {
-  //     const command = { ...defaults.find((command) => command.id === 'health') }
-  //     const response = await fetch(`${url}/webhook/groupme`, {
-  //       method: 'POST',
-  //       headers: {
-  //         Accept: 'application/json',
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({ text: 'nothing !health folks' }),
-  //     })
-  //     const data = await response.json()
+    it('should reject if bad apikey', async function () {
+      const response = await fetch(`${url}/webhook/groupme`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: 'nothing here folks' }),
+      })
+      const data = await response.json()
 
-  //     expect(response.status).toBe(200)
-  //     expect(data.command).toEqual(command)
-  //     expect(data.commandId).toBe(command.id)
-  //     expect(data.botId).toBeUndefined()
-  //     expect(data.hasToken).toBe(false)
-  //   })
+      expect(response.status).toBe(403)
+      expect(data.hasApikey).toBe(false)
+    })
 
-  //   it('can find the first command', async () => {
-  //     const command = { ...defaults.find((command) => command.id === 'health') }
-  //     const response = await fetch(`${url}/webhook/groupme`, {
-  //       method: 'POST',
-  //       headers: {
-  //         Accept: 'application/json',
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({ text: 'nothing !health !list folks' }),
-  //     })
-  //     const data = await response.json()
+    it('should do nothing if payload not json', async function () {
+      const response = await fetch(`${url}/webhook/groupme?apikey=${process.env.APIKEY}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+        },
+        body: 'nothing here folks',
+      })
+      const data = await response.json()
 
-  //     expect(response.status).toBe(200)
-  //     expect(data.command).toEqual(command)
-  //     expect(data.commandId).toBe(command.id)
-  //     expect(data.botId).toBeUndefined()
-  //     expect(data.hasToken).toBe(false)
-  //   })
-  // })
+      expect(response.status).toBe(200)
+      expect(data.message).toBe('payload is not json')
+    })
+    it('should do nothing is payload missing text', async function () {
+      const response = await fetch(`${url}/webhook/groupme?apikey=${process.env.APIKEY}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notext: 'nothing here folks' }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.message).toBe('payload is missing text field')
+    })
+    it('should do nothing if payload is system message', async function () {
+      const response = await fetch(`${url}/webhook/groupme?apikey=${process.env.APIKEY}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: 'nothing here folks', system: true }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.message).toBe('payload is a system message')
+    })
+    it('should do nothing if payload sender is bot', async function () {
+      const response = await fetch(`${url}/webhook/groupme?apikey=${process.env.APIKEY}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: 'nothing here folks', sender_type: 'bot' }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.message).toBe('payload is from a bot')
+    })
+
+    it.each([{ text: 'nothing here folks' }, { text: 'health' }])('should not delegate to command handler when no command in $text', async function ({ text }) {
+      const response = await fetch(`${url}/webhook/groupme?apikey=${process.env.APIKEY}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text, sender_type: 'notabot' }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.message).toBe('payload text has no command')
+    })
+
+    it.each([{ text: '!health' }, { text: 'nothing !health folks' }, { text: 'nothing !health' }, { text: '!health folks' }])(
+      'should delegate to command handler when 1 command and $text',
+      async function ({ text }) {
+        const response = await fetch(`${url}/webhook/groupme?apikey=${process.env.APIKEY}`, {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ text, sender_type: 'notabot' }),
+        })
+        const data = await response.json()
+
+        expect(response.status).toBe(200)
+        expect(data).toEqual(
+          expect.objectContaining({
+            command: expect.objectContaining({
+              id: 'health',
+            }),
+          }),
+        )
+      },
+    )
+
+    it('should delegate to command handler when command found and its not really a command', async function () {
+      const response = await fetch(`${url}/webhook/groupme?apikey=${process.env.APIKEY}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: '!notacommand', sender_type: 'notabot' }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.message).toBe('no matching command')
+    })
+
+    it('should delegate to command handler when many commands in text', async function () {
+      const response = await fetch(`${url}/webhook/groupme?apikey=${process.env.APIKEY}`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: 'some !health !list !info text', sender_type: 'notabot' }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data).toEqual(
+        expect.objectContaining({
+          command: expect.objectContaining({
+            id: 'health',
+          }),
+        }),
+      )
+    })
+  })
 
   describe('/*', function () {
     it('should return the home page', async function () {
