@@ -1,6 +1,7 @@
 import 'dotenv/config'
+import config from 'config'
 
-const url = `http://${process.env.HOST}:${process.env.PORT}`
+const url = `http://${config.get('host')}:${config.get('port')}`
 
 describe('api', function () {
   describe('/health', function () {

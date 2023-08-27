@@ -1,17 +1,19 @@
 import { Server } from '@hapi/hapi'
 import Wreck from '@hapi/wreck'
+import config from 'config'
+
 import pack from '../../package.json'
 
 export default class GroupMe {
   readonly server: Server
-  readonly baseUrl: string = process.env.GROUPME_BASEURL ?? 'https://api.groupme.com/v3/'
+  readonly url: string = config.get('groupme.url') ?? 'https://api.groupme.com/v3/'
   readonly client: typeof Wreck
 
   constructor(server: Server) {
     this.server = server
 
     this.client = Wreck.defaults({
-      baseUrl: this.baseUrl,
+      baseUrl: this.url,
       headers: {
         'User-Agent': `${pack.name}:${pack.version}`,
       },
