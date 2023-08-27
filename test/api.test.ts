@@ -29,6 +29,61 @@ describe('api', function () {
     })
   })
 
+  describe('/webhook/groupme', () => {
+    it('can find no command', async () => {
+      const response = await fetch(`${url}/webhook/groupme`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: 'nothing here folks' }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.message).toEqual('no commands')
+    })
+
+    it('can find a command', async () => {
+      const command = { ...defaults.find((command) => command.id === 'health') }
+      const response = await fetch(`${url}/webhook/groupme`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: 'nothing !health folks' }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.command).toEqual(command)
+      expect(data.commandId).toBe(command.id)
+      expect(data.botId).toBeUndefined()
+      expect(data.hasToken).toBe(false)
+    })
+
+    it('can find the first command', async () => {
+      const command = { ...defaults.find((command) => command.id === 'health') }
+      const response = await fetch(`${url}/webhook/groupme`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: 'nothing !health !list folks' }),
+      })
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.command).toEqual(command)
+      expect(data.commandId).toBe(command.id)
+      expect(data.botId).toBeUndefined()
+      expect(data.hasToken).toBe(false)
+    })
+  })
+
   describe('/*', function () {
     it('should return the home page', async function () {
       const response = await fetch(`${url}`)

@@ -53,7 +53,8 @@ export default class Commands {
   readonly server: Server
   readonly defaults: Array<Command> = defaults
   readonly callable = [{ name: 'list', fn: this.list }]
-  readonly fnNameRegex = /.*(\w|^)!fn:(?<fnName>.*)(\w|$)?/
+  readonly commandIdRegex = /(\s|^)!(?<commandId>\w+)(\s|$)/
+  readonly fnNameRegex = /(\s|^)!fn:(?<fnName>\w+)(\s|$)/
 
   constructor(server: Server) {
     this.server = server
@@ -69,6 +70,12 @@ export default class Commands {
       {},
       commands.find((command) => command.id === commandId),
     )
+  }
+
+  getCommandId(message: string) {
+    const match = message.match(this.commandIdRegex)
+    const { commandId } = match?.groups || { commandId: '' }
+    return commandId
   }
 
   async getAll() {
