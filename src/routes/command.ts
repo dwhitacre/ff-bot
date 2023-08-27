@@ -34,4 +34,18 @@ export default function register(server: Server): void {
       tags: ['api', 'command'],
     },
   })
+
+  server.route({
+    method: 'GET',
+    path: '/command',
+    options: {
+      handler: async function (request: Request, h: ResponseToolkit) {
+        const commands = await request.server.commands().getAll()
+        return h.response({ commands })
+      },
+      description: 'Lists all commands',
+      notes: 'Just returns all the commands and their metadata',
+      tags: ['api', 'command'],
+    },
+  })
 }

@@ -22,8 +22,11 @@
           <thead>
             <tr>
               <th>Command</th>
-              <th>Image</th>
-              <th>Enabled</th>
+              <th>Description</th>
+              <th>Message</th>
+              <th>Picture</th>
+              <th title="Whether the bot responds to the command.">Enabled</th>
+              <th title="Shows in the !list command.">Visible</th>
             </tr>
           </thead>
           <tbody id="commands-table-body"></tbody>
@@ -58,14 +61,9 @@
         return $('<td>').text(text)
       }
 
-      function addType(array, type) {
+      function sortCommands(array) {
         return array
-          .map((item) => ({ ...item, type })) 
-      }
-
-      function sortSize(array) {
-        return array
-          .sort((a, b) => b.size - a.size)
+          .sort((a, b) => a.id.localeCompare(b.id))
       }
 
       function append(tbody, array) {
@@ -73,29 +71,24 @@
 
         array.forEach(function(item) {
           var tr = $('<tr>')
-            .append(td(item.type))
-            .append(td(item.name))
-            .append(td(item.size))
+            .append(td(`!${item.id}`))
+            .append(td(item.desc))
+            .append(td(item.message))
+            .append(td(item.pictureurl ? $('<img>').attr(src, item.pictureurl) : ''))
+            .append(td(item.enabled ? '✔️' : '❌'))
+            .append(td(item.hidden ? '❌' : '✔️'))
 
           tbody.append(tr)
         })
       }
 
-      $.get('../commands', function(data, status) {
-        if (status !== 'success') return failed()
-
-        var backendList = sortSize(
-          addType(data.backend.queues, 'Queue').concat(
-            addType(data.backend.containers, 'Container')
-          ))
-        append('#backend-table-body', backendList)
-
+      $.get('./command', function(data) {
+        if (!data?.commands) return failed()
+        
+        const commands = sortCommands(data.commands ?? [])
         var cacheBody = $('#commands-table-body')
-        var tr = $('<tr>')
-          .append(td('rmc'))
-          .append(td(JSON.stringify(data.rmc, null, 2)))
-        cacheBody.append(tr)
-      })
+        append(cacheBody, commands)
+      }).fail(failed)
     })()
   </script>
 </html>
