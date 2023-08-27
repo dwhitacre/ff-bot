@@ -1,15 +1,14 @@
 import 'dotenv/config'
 import Hapi, { ServerRegisterPluginObject } from '@hapi/hapi'
 import { resolve } from 'path'
-import config from 'config'
 
 import routes from './routes'
 import GroupMe from './clients/groupme'
 
 async function start(): Promise<void> {
   const server = new Hapi.Server({
-    host: config.get('host') || 'localhost',
-    port: config.get('port') || 3001,
+    host: process.env.HOST || 'localhost',
+    port: process.env.PORT || 3001,
     routes: {
       files: {
         relativeTo: resolve(__dirname, '../public'),
@@ -21,8 +20,8 @@ async function start(): Promise<void> {
     plugin: await import('hapi-pino'),
     options: {
       redact: ['*.headers', '*.request', '*.response'],
-      level: config.get('log.level') ?? 'info',
-      logPayload: !!config.get('log.payload'),
+      level: process.env.LOG_LEVEL ?? 'info',
+      logPayload: !!process.env.LOG_PAYLOAD,
       logRouteTags: true,
       mergeHapiLogData: true,
       ignorePaths: ['/health'],
