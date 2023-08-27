@@ -1,48 +1,12 @@
 import { Server, Request, ResponseToolkit } from '@hapi/hapi'
 
-import packageJson from '../../package.json'
-
-export interface Command {
-  id: string
-  message?: string
-  pictureurl?: string
-  desc?: string
-  enabled: boolean
-  hidden: boolean
-}
-
-export const defaultCommands: Array<Command> = [
-  {
-    id: 'health',
-    message: 'I am running!',
-    desc: 'Just a health check for the bot.',
-    enabled: true,
-    hidden: true,
-  },
-  {
-    id: 'version',
-    message: packageJson.version,
-    desc: "The bot's version.",
-    enabled: true,
-    hidden: true,
-  },
-]
-
-export async function get(request: Request, commandId?: string) {
-  const commands = defaultCommands.concat(await request.server.sheets().commands())
-
-  if (commandId) return commands.find((command) => command.id === commandId)
-  return commands
-}
-
 export default function register(server: Server): void {
   server.route({
     method: 'GET',
     path: '/command/{commandId}',
     options: {
       handler: async function (request: Request, h: ResponseToolkit) {
-        const commands = defaultCommands.concat(await request.server.sheets().commands())
-        const command = commands.find((command) => command.id === request.params.commandId)
+        const command = await request.server.commands().get(request.params.commandId)
 
         if (!command) return h.response({ message: 'no matching command', commandId: request.params.commandId })
         request.server.logger.debug({ command }, 'command found')

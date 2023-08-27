@@ -2,7 +2,7 @@ import { Server } from '@hapi/hapi'
 import { JWT } from 'google-auth-library'
 import { GoogleSpreadsheet, GoogleSpreadsheetRow } from 'google-spreadsheet'
 
-import { Command } from '../routes/command'
+import { Command } from './commands'
 
 const scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive.file']
 

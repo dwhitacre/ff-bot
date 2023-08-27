@@ -5,6 +5,7 @@ import { resolve } from 'path'
 import routes from './routes'
 import GroupMe from './clients/groupme'
 import Sheets from './clients/sheets'
+import Commands from './clients/commands'
 
 async function start(): Promise<void> {
   const server = new Hapi.Server({
@@ -43,6 +44,7 @@ async function start(): Promise<void> {
 
   new GroupMe(server)
   new Sheets(server)
+  new Commands(server)
   routes(server)
 
   process.on('SIGTERM', async function () {

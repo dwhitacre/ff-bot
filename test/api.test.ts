@@ -1,10 +1,10 @@
 import 'dotenv/config'
-import { defaultCommands } from '../src/routes/command'
+import { defaults } from '../src/clients/commands'
 
 const url = `http://${process.env.HOST}:${process.env.PORT}`
 
 describe('api', function () {
-  it.each(defaultCommands)('/command/$id: should respond with command', async function (command) {
+  it.each(defaults)('/command/$id: should respond with command', async function (command) {
     const response = await fetch(`${url}/command/${command.id}`)
     const data = await response.json()
 
