@@ -17,7 +17,12 @@ export async function handler(request: Request, h: ResponseToolkit) {
 
   if (botId) {
     request.server.logger.debug({ command }, 'has botId, posting to groupme')
-    await request.server.groupme().botPost(botId, command.message, command.pictureurl)
+
+    try {
+      await request.server.groupme().botPost(botId, command.message, command.pictureurl)
+    } catch (err) {
+      request.server.logger.error(err, 'failed to botPost')
+    }
   }
 
   return h.response({ botId, hasApikey, sheetId, command, commandId: request.params.commandId })
