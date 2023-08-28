@@ -194,6 +194,10 @@
   color: #606c76;
 }
 
+.container {
+  overflow-x: auto;
+}
+
 td {
   word-wrap: break-word;
   -webkit-hyphens: auto;

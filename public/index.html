@@ -80,7 +80,7 @@
             .append(td(`!${item.id}`))
             .append(td(item.desc))
             .append(td(item.message))
-            .append(td(item.pictureurl ? $('<img>').attr('src', item.pictureurl) : ''))
+            .append(item.pictureurl ? td().append($('<img>').attr('src', item.pictureurl).attr('width', 96).attr('height', 96)) : td(''))
             .append(td(item.enabled ? '✔️' : '❌'))
             .append(td(item.hidden ? '❌' : '✔️'))
 
