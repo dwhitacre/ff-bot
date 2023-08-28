@@ -93,6 +93,42 @@ describe('api', function () {
       expect(data.commandId).toBe('health')
       expect(data.message).toBe('no matching command')
     })
+
+    it.each([
+      { command: 'nomatchingfn1', message: '!fn:nomatchingfn' },
+      { command: 'nomatchingfn2', message: '!fn:listabc' },
+      { command: 'notafunction1', message: 'fn:unknown' },
+      { command: 'fn1', message: '__unknown_fn__ words' },
+      { command: 'fn2', message: 'words __unknown_fn__ words' },
+      { command: 'fn3', message: 'words __unknown_fn__' },
+      { command: 'nofn1', message: 'w!fn:info' },
+      { command: 'minimum', message: 'message' },
+      { command: 'duplicate', message: 'dupe1' },
+    ])('should handle these commands: $command', async function ({ command, message }) {
+      const response = await fetch(`${url}/command/${command}?apikey=${process.env.APIKEY}&sheetId=test`)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.command.message).toBe(message)
+    })
+
+    it('should do nothing on when command missing message and picture', async function () {
+      const response = await fetch(`${url}/command/missingmessageandpicture?apikey=${process.env.APIKEY}&sheetId=test`)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.commandId).toBe('missingmessageandpicture')
+      expect(data.message).toBe('no matching command')
+    })
+
+    it('should return the picture when no message', async function () {
+      const response = await fetch(`${url}/command/justpicture?apikey=${process.env.APIKEY}&sheetId=test`)
+      const data = await response.json()
+
+      expect(response.status).toBe(200)
+      expect(data.command.message).toBe('')
+      expect(data.command.pictureurl).toBe('pic')
+    })
   })
 
   describe('/webhook/groupme', () => {

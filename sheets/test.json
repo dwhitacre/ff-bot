@@ -5,5 +5,78 @@
     "desc": "",
     "disabled": "x",
     "hidden": ""
+  }, {
+    "command": "nomatchingfn1",
+    "message": "!fn:nomatchingfn",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "nomatchingfn2",
+    "message": "!fn:listabc",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "notafunction1",
+    "message": "fn:unknown",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "fn1",
+    "message": "!fn:unknown words",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "fn2",
+    "message": "words !fn:unknown words",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "fn3",
+    "message": "words !fn:unknown",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "nofn1",
+    "message": "w!fn:info",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "message": "missing command",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "missingmessageandpicture",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "justpicture",
+    "pictureurl": "pic",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "minimum",
+    "message": "message"
+  }, {
+    "command": "duplicate",
+    "message": "dupe1",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
+  }, {
+    "command": "duplicate",
+    "message": "dupe2",
+    "desc": "",
+    "disabled": "",
+    "hidden": ""
   }]
 }
