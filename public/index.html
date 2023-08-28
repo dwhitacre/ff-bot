@@ -14,10 +14,16 @@
       <nav class="navigation">
         <section class="container" id="navigation">
           <h1 class="title">Fantasy Football Bot</h1>
+        </section>
       </nav>
 
       <section class="container" id="commands">
         <h3>Commands</h3>
+        <select id="sheetId">
+          <option value="defaults">defaults</option>
+          <option value="17X4gGMBjTqyXnIVtAiGOJ7tUdn5Uov2J2Ax6bNN7SvI">production</option>
+          <option value="19pQBVOJmrbYlaHxMQnHKvTLBY0Ru8GLvD6r_VD3lF9c">dev</option>
+        </select>
         <table>
           <thead>
             <tr>
@@ -74,7 +80,7 @@
             .append(td(`!${item.id}`))
             .append(td(item.desc))
             .append(td(item.message))
-            .append(td(item.pictureurl ? $('<img>').attr(src, item.pictureurl) : ''))
+            .append(td(item.pictureurl ? $('<img>').attr('src', item.pictureurl) : ''))
             .append(td(item.enabled ? '✔️' : '❌'))
             .append(td(item.hidden ? '❌' : '✔️'))
 
@@ -82,13 +88,19 @@
         })
       }
 
-      $.get('./command', function(data) {
-        if (!data?.commands) return failed()
-        
-        const commands = sortCommands(data.commands ?? [])
-        var cacheBody = $('#commands-table-body')
-        append(cacheBody, commands)
-      }).fail(failed)
+      function load() {
+        $('#commands-table-body').empty()
+        $.get(`./command?sheetId=${$('#sheetId').val()}`, function(data) {
+          if (!data?.commands) return failed()
+          
+          const commands = sortCommands(data.commands ?? [])
+          var cacheBody = $('#commands-table-body')
+          append(cacheBody, commands)
+        }).fail(failed)
+      }
+
+      $('#sheetId').on('change', load)
+      load()
     })()
   </script>
 </html>

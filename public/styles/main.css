@@ -20,10 +20,6 @@
   min-height: 100vh;
 }
 
-.wrapper .container {
-  max-width: 80rem;
-}
-
 .wrapper > .container {
   padding-bottom: 7.5rem;
   padding-top: 7.5rem;
@@ -199,12 +195,16 @@
 }
 
 td {
-  overflow-wrap: break-word;
   word-wrap: break-word;
   -webkit-hyphens: auto;
   -ms-hyphens: auto;
   -moz-hyphens: auto;
   hyphens: auto;
+  margin: 0 auto;
+  overflow-x: auto;
+  white-space: wrap;
+  max-width: fit-content;
+  overflow-wrap: anywhere;
 }
 
 td:last-child {
