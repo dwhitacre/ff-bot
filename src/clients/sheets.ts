@@ -32,7 +32,7 @@ export default class Sheets {
 
     this.jwt = new JWT({
       email: process.env.GOOGLE_SHEETS_EMAIL,
-      key: process.env.GOOGLE_SHEETS_KEY,
+      key: process.env.GOOGLE_SHEETS_KEY.split(String.raw`\n`).join('\n'),
       scopes: this.scopes,
     })
 
