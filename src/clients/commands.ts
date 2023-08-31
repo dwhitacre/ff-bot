@@ -89,10 +89,6 @@ export default class Commands {
   constructor(server: Server) {
     this.server = server
     this.fns = new Fns(this.server)
-
-    server.decorate('server', 'commands', (): Commands => {
-      return this
-    })
   }
 
   fromSheetsRow(row: SheetsRow): Command | null {

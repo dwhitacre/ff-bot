@@ -1,11 +1,9 @@
 import 'dotenv/config'
-import Hapi, { ServerRegisterPluginObject } from '@hapi/hapi'
+import Hapi from '@hapi/hapi'
 import { resolve } from 'path'
 
 import routes from './routes'
-import GroupMe from './clients/groupme'
-import Sheets from './clients/sheets'
-import Commands from './clients/commands'
+import { commands, groupme, log, openapi, sheets } from './plugins'
 
 async function start(): Promise<void> {
   const server = new Hapi.Server({
@@ -18,33 +16,12 @@ async function start(): Promise<void> {
     },
   })
 
-  await server.register({
-    plugin: await import('hapi-pino'),
-    options: {
-      redact: ['*.headers', '*.request', '*.response'],
-      level: process.env.LOG_LEVEL ?? 'info',
-      logPayload: !!process.env.LOG_PAYLOAD,
-      logRouteTags: true,
-      mergeHapiLogData: true,
-    },
-  } as ServerRegisterPluginObject<unknown>)
+  await log(server)
+  await openapi(server)
+  await groupme(server)
+  await sheets(server)
+  await commands(server)
 
-  await server.register(await import('@hapi/inert'))
-  await server.register(await import('@hapi/vision'))
-
-  await server.register({
-    plugin: await import('hapi-swagger'),
-    options: {
-      info: {
-        title: 'Fantasy Football Bot',
-      },
-      documentationPage: false,
-    },
-  })
-
-  new GroupMe(server)
-  new Sheets(server)
-  new Commands(server)
   routes(server)
 
   process.on('SIGTERM', async function () {

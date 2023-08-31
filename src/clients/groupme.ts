@@ -17,10 +17,6 @@ export default class GroupMe {
         'X-Access-Token': process.env.GROUPME_TOKEN,
       },
     })
-
-    server.decorate('server', 'groupme', (): GroupMe => {
-      return this
-    })
   }
 
   async call(method: string, url: string, options: { [_: string]: unknown }) {

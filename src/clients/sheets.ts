@@ -35,10 +35,6 @@ export default class Sheets {
       key: process.env.GOOGLE_SHEETS_KEY.split(String.raw`\n`).join('\n'),
       scopes: this.scopes,
     })
-
-    server.decorate('server', 'sheets', (): Sheets => {
-      return this
-    })
   }
 
   async loadFromFile(sheetId: string) {
