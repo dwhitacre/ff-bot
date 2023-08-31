@@ -46,7 +46,6 @@ describe('api', function () {
       )
       expect(data.commandId).toBe(command.command)
       expect(data.botId).toBeUndefined()
-      expect(data.hasApikey).toBe(true)
     })
 
     it('should reject if no apikey', async function () {
@@ -54,7 +53,6 @@ describe('api', function () {
       const data = await response.json()
 
       expect(response.status).toBe(403)
-      expect(data.hasApikey).toBe(false)
     })
 
     it('should reject if bad apikey', async function () {
@@ -62,7 +60,6 @@ describe('api', function () {
       const data = await response.json()
 
       expect(response.status).toBe(403)
-      expect(data.hasApikey).toBe(false)
     })
 
     it('should do nothing on no matching command', async function () {
@@ -144,7 +141,6 @@ describe('api', function () {
       const data = await response.json()
 
       expect(response.status).toBe(403)
-      expect(data.hasApikey).toBe(false)
     })
 
     it('should reject if bad apikey', async function () {
@@ -159,7 +155,6 @@ describe('api', function () {
       const data = await response.json()
 
       expect(response.status).toBe(403)
-      expect(data.hasApikey).toBe(false)
     })
 
     it('should do nothing if payload not json', async function () {

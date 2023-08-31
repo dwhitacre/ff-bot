@@ -3,7 +3,7 @@ import Hapi from '@hapi/hapi'
 import { resolve } from 'path'
 
 import routes from './routes'
-import { commands, groupme, log, openapi, sheets } from './plugins'
+import * as plugins from './plugins'
 
 async function start(): Promise<void> {
   const server = new Hapi.Server({
@@ -16,11 +16,12 @@ async function start(): Promise<void> {
     },
   })
 
-  await log(server)
-  await openapi(server)
-  await groupme(server)
-  await sheets(server)
-  await commands(server)
+  await plugins.log(server)
+  await plugins.auth(server)
+  await plugins.openapi(server)
+  await plugins.groupme(server)
+  await plugins.sheets(server)
+  await plugins.commands(server)
 
   routes(server)
 

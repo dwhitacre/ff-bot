@@ -23,9 +23,6 @@ export default function register(server: Server): void {
     path: '/webhook/groupme',
     options: {
       handler: async function (request: Request, h: ResponseToolkit) {
-        const hasApikey = request.query.apikey === process.env.APIKEY
-        if (!hasApikey) return h.response({ hasApikey }).code(403)
-
         if (typeof request.payload !== 'object') return h.response({ message: 'payload is not json' })
         const payload = request.payload as GroupMeWebhook
 
@@ -41,6 +38,10 @@ export default function register(server: Server): void {
       },
       description: 'A webhook from GroupMe',
       tags: ['api', 'webhook'],
+      auth: {
+        mode: 'required',
+        strategy: 'apikey',
+      },
     },
   })
 }

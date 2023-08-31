@@ -1,13 +1,9 @@
 import { Server, Request, ResponseToolkit } from '@hapi/hapi'
 
 export async function handler(request: Request, h: ResponseToolkit) {
-  const { botId, apikey, sheetId } = request.query
-  const hasApikey = apikey === process.env.APIKEY
-
-  if (!hasApikey) return h.response({ hasApikey }).code(403)
-
+  const { botId, sheetId } = request.query
   const command = await request.server.commands().get(`!${request.params.commandId}`, sheetId)
-  request.server.logger.debug({ botId, hasApikey, sheetId, command }, 'command request info')
+  request.server.logger.debug({ botId, sheetId, command }, 'command request info')
 
   if (!command?.id) return h.response({ message: 'no matching command', commandId: request.params.commandId })
   request.server.logger.debug({ command }, 'command found')
@@ -25,7 +21,7 @@ export async function handler(request: Request, h: ResponseToolkit) {
     }
   }
 
-  return h.response({ botId, hasApikey, sheetId, command, commandId: request.params.commandId })
+  return h.response({ botId, sheetId, command, commandId: request.params.commandId })
 }
 
 export default function register(server: Server): void {
@@ -37,6 +33,10 @@ export default function register(server: Server): void {
       description: 'Runs a command by commandId',
       notes: 'Only posts to groupme if botId is provided as query params.',
       tags: ['api', 'command'],
+      auth: {
+        mode: 'required',
+        strategy: 'apikey',
+      },
     },
   })
 
