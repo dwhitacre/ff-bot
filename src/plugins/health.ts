@@ -1,7 +1,7 @@
-import { Server, Request, ResponseToolkit } from '@hapi/hapi'
-import { handler } from './command'
+import { Request, ResponseToolkit, Server } from '@hapi/hapi'
+import { handler } from '../routes/command'
 
-export default function register(server: Server): void {
+export default async function register(server: Server) {
   server.route({
     method: 'GET',
     path: '/health',

@@ -19,6 +19,7 @@ async function start(): Promise<void> {
   await plugins.log(server)
   await plugins.auth(server)
   await plugins.openapi(server)
+  await plugins.health(server)
   await plugins.groupme(server)
   await plugins.sheets(server)
   await plugins.commands(server)
