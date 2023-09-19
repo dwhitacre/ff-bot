@@ -1,7 +1,6 @@
-import { Server } from '@hapi/hapi'
+import { Server, Request } from '@hapi/hapi'
 
 import { SheetsRow } from '../sheets'
-import Fns from './fns'
 
 export interface Command {
   id: string
@@ -16,11 +15,9 @@ export default class Commands {
   readonly server: Server
   readonly prefix = '!'
   readonly regex = /(\s|^)!(?<commandId>\w+)(\s|$)/
-  readonly fns: Fns
 
   constructor(server: Server) {
     this.server = server
-    this.fns = new Fns(this.server)
   }
 
   fromSheetsRow(row: SheetsRow): Command | null {
@@ -56,13 +53,13 @@ export default class Commands {
     )
   }
 
-  async get(text?: string, sheetId?: string) {
+  async get(request: Request, text?: string, sheetId?: string) {
     const command = await this.getRaw(this.getCommandId(text), sheetId)
     if (!command) return null
     if (!command.message) return command
     if (!command.enabled) return command
 
-    command.message = await this.fns.getMessage(command, sheetId)
+    command.message = await this.server.fns().getMessage(command, request)
     return command
   }
 }

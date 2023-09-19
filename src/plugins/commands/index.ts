@@ -4,7 +4,6 @@ import Commands from './commands'
 import routes from './routes'
 
 export { default as Commands, Command } from './commands'
-export { default as Fns, Fn } from './fns'
 export { handler } from './routes'
 
 export default async function register(server: Server) {
@@ -15,5 +14,5 @@ export default async function register(server: Server) {
   routes(server)
 }
 
-export const dependencies = ['log', 'auth', 'groupme', 'sheets']
+export const dependencies = ['log', 'auth', 'groupme', 'sheets', 'functions']
 export const name = 'commands'

@@ -20,6 +20,7 @@ async function start(): Promise<void> {
   await plugins.openapi(server)
   await plugins.sheets(server)
   await plugins.commands(server)
+  await plugins.functions(server)
   await plugins.web(server)
   await plugins.health(server)
   await plugins.groupme(server)

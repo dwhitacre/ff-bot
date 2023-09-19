@@ -2,7 +2,7 @@ import { Server, Request, ResponseToolkit } from '@hapi/hapi'
 
 export async function handler(request: Request, h: ResponseToolkit) {
   const { botId, sheetId } = request.query
-  const command = await request.server.commands().get(`!${request.params.commandId}`, sheetId)
+  const command = await request.server.commands().get(request, `!${request.params.commandId}`, sheetId)
   request.server.logger.debug({ botId, sheetId, command }, 'command request info')
 
   if (!command?.id) return h.response({ message: 'no matching command', commandId: request.params.commandId })
