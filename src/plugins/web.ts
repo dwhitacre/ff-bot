@@ -1,6 +1,6 @@
 import { Server } from '@hapi/hapi'
 
-export default function register(server: Server): void {
+export default async function register(server: Server) {
   server.route({
     method: '*',
     path: '/{param*}',
@@ -13,7 +13,7 @@ export default function register(server: Server): void {
       },
       description: 'The home page',
       notes: 'GET the home page',
-      tags: ['home'],
+      tags: ['home', 'web'],
     },
   })
 }
