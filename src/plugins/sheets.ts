@@ -94,3 +94,6 @@ export default async function register(server: Server) {
     return sheets
   })
 }
+
+export const dependencies = ['log']
+export const name = 'sheets'

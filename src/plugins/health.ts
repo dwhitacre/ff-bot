@@ -18,3 +18,6 @@ export default async function register(server: Server) {
     },
   })
 }
+
+export const dependencies = ['commands']
+export const name = 'sheets'

@@ -14,3 +14,6 @@ export default async function register(server: Server) {
     },
   })
 }
+
+export const dependencies = []
+export const name = 'openapi'

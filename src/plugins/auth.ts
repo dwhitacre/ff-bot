@@ -14,3 +14,6 @@ export default async function register(server: Server) {
   })
   server.auth.strategy('apikey', 'apikey')
 }
+
+export const dependencies = []
+export const name = 'auth'

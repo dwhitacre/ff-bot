@@ -12,3 +12,6 @@ export default async function register(server: Server) {
   })
   routes(server)
 }
+
+export const dependencies = ['log', 'auth', 'commands']
+export const name = 'groupme'

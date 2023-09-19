@@ -12,3 +12,6 @@ export default async function register(server: Server) {
     },
   } as ServerRegisterPluginObject<unknown>)
 }
+
+export const dependencies = []
+export const name = 'log'
