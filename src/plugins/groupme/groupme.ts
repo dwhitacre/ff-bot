@@ -1,7 +1,7 @@
 import { Server } from '@hapi/hapi'
 import Wreck from '@hapi/wreck'
 
-export class GroupMe {
+export default class GroupMe {
   readonly server: Server
   readonly baseUrl: string = process.env.GROUPME_BASEURL ?? 'https://api.groupme.com/v3/'
   readonly client: typeof Wreck
@@ -47,11 +47,4 @@ export class GroupMe {
       return false
     }
   }
-}
-
-export default async function register(server: Server) {
-  const groupme = new GroupMe(server)
-  server.decorate('server', 'groupme', (): GroupMe => {
-    return groupme
-  })
 }

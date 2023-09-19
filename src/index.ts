@@ -2,7 +2,6 @@ import 'dotenv/config'
 import Hapi from '@hapi/hapi'
 import { resolve } from 'path'
 
-import routes from './routes'
 import * as plugins from './plugins'
 
 async function start(): Promise<void> {
@@ -19,13 +18,11 @@ async function start(): Promise<void> {
   await plugins.log(server)
   await plugins.auth(server)
   await plugins.openapi(server)
-  await plugins.health(server)
-  await plugins.web(server)
-  await plugins.groupme(server)
   await plugins.sheets(server)
   await plugins.commands(server)
-
-  routes(server)
+  await plugins.web(server)
+  await plugins.health(server)
+  await plugins.groupme(server)
 
   process.on('SIGTERM', async function () {
     server.logger.warn('SIGTERM received, shutting down.')
