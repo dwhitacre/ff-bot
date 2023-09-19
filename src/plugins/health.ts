@@ -1,5 +1,5 @@
 import { Request, ResponseToolkit, Server } from '@hapi/hapi'
-import { handler } from '../routes/command'
+import { handler } from './commands'
 
 export default async function register(server: Server) {
   server.route({

@@ -1,5 +1,5 @@
 import { Server, Request, ResponseToolkit } from '@hapi/hapi'
-import { handler } from './command'
+import { handler } from '../plugins/commands'
 
 export interface GroupMeWebhook {
   text?: string
