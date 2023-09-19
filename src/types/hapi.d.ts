@@ -1,4 +1,4 @@
-import Sheets from '../clients/sheets'
+import { Sheets } from '../plugins/sheets'
 import GroupMe from '../clients/groupme'
 import Commands from '../clients/commands'
 

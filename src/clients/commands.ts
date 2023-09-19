@@ -1,7 +1,7 @@
 import { Server } from '@hapi/hapi'
 
 import packageJson from '../../package.json'
-import { SheetsRow } from './sheets'
+import { SheetsRow } from '../plugins/sheets'
 
 export interface Fn {
   name: string
